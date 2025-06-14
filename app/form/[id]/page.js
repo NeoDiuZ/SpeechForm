@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Send, Mic, CheckCircle } from 'lucide-react'
@@ -16,11 +16,7 @@ export default function FormFillPage() {
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
 
-  useEffect(() => {
-    loadForm()
-  }, [params.id])
-
-  const loadForm = async () => {
+  const loadForm = useCallback(async () => {
     try {
       // Load form from API
       const response = await fetch(`/api/forms/${params.id}`)
@@ -48,7 +44,11 @@ export default function FormFillPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [params.id, router])
+
+  useEffect(() => {
+    loadForm()
+  }, [loadForm])
 
   const handleInputChange = (fieldId, value) => {
     setResponses(prev => ({

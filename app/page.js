@@ -42,7 +42,7 @@ export default function Home() {
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
               Build intelligent forms where users can speak their responses instead of typing. 
-              Powered by OpenAI's speech-to-text technology for seamless data collection.
+              Powered by OpenAI&apos;s speech-to-text technology for seamless data collection.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link 
@@ -101,7 +101,7 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">AI-Powered Accuracy</h3>
               <p className="text-gray-600">
-                Powered by OpenAI's Whisper for industry-leading speech recognition accuracy
+                Powered by OpenAI&apos;s Whisper for industry-leading speech recognition accuracy
               </p>
             </div>
           </div>

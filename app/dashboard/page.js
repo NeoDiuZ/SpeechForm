@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { Plus, FileText, Eye, Edit, Trash2, Copy, BarChart3, LogOut, User } from 'lucide-react'
 import { toast } from 'react-hot-toast'
@@ -16,11 +16,7 @@ export default function Dashboard() {
   const router = useRouter()
 
   // Load user and forms from Supabase
-  useEffect(() => {
-    loadUserAndForms()
-  }, [])
-
-  const loadUserAndForms = async () => {
+  const loadUserAndForms = useCallback(async () => {
     try {
       // Get current user
       const { data: { session } } = await supabase.auth.getSession()
@@ -74,7 +70,11 @@ export default function Dashboard() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [supabase, router])
+
+  useEffect(() => {
+    loadUserAndForms()
+  }, [loadUserAndForms])
 
   const deleteForm = async (formId) => {
     if (!confirm('Are you sure you want to delete this form?')) return

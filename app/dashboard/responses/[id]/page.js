@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Download, Calendar, User, FileText } from 'lucide-react'
@@ -16,11 +16,7 @@ export default function FormResponsesPage() {
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState(null)
 
-  useEffect(() => {
-    loadFormAndResponses()
-  }, [params.id])
-
-  const loadFormAndResponses = async () => {
+  const loadFormAndResponses = useCallback(async () => {
     try {
       // Get current user
       const { data: { session } } = await supabase.auth.getSession()
@@ -67,7 +63,11 @@ export default function FormResponsesPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [params.id, supabase, router])
+
+  useEffect(() => {
+    loadFormAndResponses()
+  }, [loadFormAndResponses])
 
   const exportToCSV = () => {
     if (!responses.length) {

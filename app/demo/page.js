@@ -60,15 +60,15 @@ export default function DemoPage() {
               <div>
                 <h3 className="text-lg font-medium text-blue-900 mb-2">Try Voice Input!</h3>
                 <p className="text-blue-700 mb-4">
-                  This demo shows how SpeechForms works. You can either type your responses or click the microphone buttons to speak your answers. Your speech will be automatically converted to text using OpenAI's advanced speech recognition.
+                  This demo shows how SpeechForms works. You can either type your responses or click the microphone buttons to speak your answers. Your speech will be automatically converted to text using OpenAI&apos;s advanced speech recognition.
                 </p>
                 <div className="bg-blue-100 rounded-lg p-4">
                   <h4 className="font-medium text-blue-900 mb-2">🎯 Tips for best results:</h4>
                   <ul className="text-sm text-blue-800 space-y-1">
                     <li>• Speak clearly and at a normal pace</li>
                     <li>• Use a quiet environment if possible</li>
-                    <li>• Say "period" or "comma" for punctuation</li>
-                    <li>• Click stop when you're done speaking</li>
+                    <li>• Say &quot;period&quot; or &quot;comma&quot; for punctuation</li>
+                    <li>• Click stop when you&apos;re done speaking</li>
                   </ul>
                 </div>
               </div>
