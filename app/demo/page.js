@@ -87,7 +87,7 @@ export default function DemoPage() {
                   value={responses.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   placeholder="Enter your full name"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white placeholder-gray-500"
                 />
                 <div className="bg-gray-50 p-3 rounded-lg">
                   <VoiceInput
@@ -109,7 +109,7 @@ export default function DemoPage() {
                   value={responses.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   placeholder="Enter your email address"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white placeholder-gray-500"
                 />
                 <div className="bg-gray-50 p-3 rounded-lg">
                   <VoiceInput
@@ -129,7 +129,7 @@ export default function DemoPage() {
                 <select
                   value={responses.rating}
                   onChange={(e) => handleInputChange('rating', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white placeholder-gray-500"
                 >
                   <option value="">Select a rating</option>
                   <option value="Excellent">Excellent</option>
@@ -171,7 +171,7 @@ export default function DemoPage() {
                   onChange={(e) => handleInputChange('feedback', e.target.value)}
                   placeholder="Share your thoughts and suggestions..."
                   rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white placeholder-gray-500"
                 />
                 <div className="bg-gray-50 p-3 rounded-lg">
                   <VoiceInput
