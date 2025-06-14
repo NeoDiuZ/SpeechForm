@@ -101,14 +101,30 @@ export async function POST(request) {
       )
     }
 
-    // Validate file type
-    const allowedTypes = ['audio/webm', 'audio/mp4', 'audio/mpeg', 'audio/wav', 'audio/ogg']
-    if (!allowedTypes.includes(audioFile.type)) {
+    // Validate file type - be more permissive for mobile formats
+    const allowedTypes = [
+      'audio/webm', 'audio/mp4', 'audio/mpeg', 'audio/wav', 'audio/ogg',
+      'audio/webm;codecs=opus', 'audio/mp4;codecs=mp4a.40.2', 'audio/ogg;codecs=opus',
+      'audio/x-wav', 'audio/wave' // Additional formats for mobile compatibility
+    ]
+    
+    const isValidType = allowedTypes.some(type => 
+      audioFile.type === type || audioFile.type.startsWith(type.split(';')[0])
+    )
+    
+    if (!isValidType) {
+      console.log('Rejected audio type:', audioFile.type)
       return NextResponse.json(
-        { error: 'Invalid audio format. Supported formats: WebM, MP4, MP3, WAV, OGG' },
+        { error: `Invalid audio format: ${audioFile.type}. Supported formats: WebM, MP4, MP3, WAV, OGG` },
         { status: 400 }
       )
     }
+    
+    console.log('Processing audio file:', {
+      type: audioFile.type,
+      size: audioFile.size,
+      name: audioFile.name
+    })
 
     // Convert File to format that OpenAI expects
     const transcription = await openai.audio.transcriptions.create({

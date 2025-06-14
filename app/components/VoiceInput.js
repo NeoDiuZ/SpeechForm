@@ -12,6 +12,27 @@ export default function VoiceInput({ onTranscription, placeholder, disabled = fa
   const audioChunksRef = useRef([])
   const streamRef = useRef(null)
 
+  // Helper function to request permissions on mobile with better error handling
+  const requestMobilePermissions = async () => {
+    try {
+      // Test if we can get basic audio stream first
+      const testStream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      testStream.getTracks().forEach(track => track.stop())
+      return true
+    } catch (error) {
+      console.error('Mobile permission test failed:', error)
+      
+      if (error.name === 'NotAllowedError') {
+        toast.error('🎤 Please enable microphone access in your browser settings and refresh the page.')
+      } else if (error.name === 'NotFoundError') {
+        toast.error('🎤 No microphone found. Please ensure your device has a working microphone.')
+      } else {
+        toast.error('🎤 Unable to access microphone. Please check your browser permissions.')
+      }
+      return false
+    }
+  }
+
   // Cleanup function to stop recording and release resources
   const cleanup = () => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
@@ -31,6 +52,8 @@ export default function VoiceInput({ onTranscription, placeholder, disabled = fa
 
   const startRecording = async () => {
     console.log('startRecording called') // Debug log
+    console.log('User Agent:', navigator.userAgent) // Debug for mobile
+    console.log('Is mobile:', /iPhone|iPad|iPod|Android/i.test(navigator.userAgent))
     
     // Check if browser supports the required APIs
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -43,31 +66,67 @@ export default function VoiceInput({ onTranscription, placeholder, disabled = fa
       return
     }
 
+    // Additional mobile-specific checks
+    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      // Safari on iOS requires user interaction and has stricter requirements
+      console.log('iOS device detected - using Safari-optimized settings')
+    }
+    
+    if (/Android/i.test(navigator.userAgent)) {
+      console.log('Android device detected - using Android-optimized settings')
+    }
+
+    // Pre-flight permission check for mobile devices
+    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+      const hasPermission = await requestMobilePermissions()
+      if (!hasPermission) {
+        return
+      }
+    }
+
     try {
       console.log('Requesting microphone access...') // Debug log
       
-      const stream = await navigator.mediaDevices.getUserMedia({ 
+      // Enhanced audio constraints for mobile compatibility
+      const audioConstraints = {
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
-          sampleRate: 44100,
-        } 
-      })
+          autoGainControl: true,
+          // Use more conservative settings for mobile
+          sampleRate: { ideal: 16000, min: 8000, max: 48000 },
+          channelCount: { ideal: 1 }, // Mono for smaller file size
+          // Mobile-specific constraints
+          ...(navigator.userAgent.match(/iPhone|iPad|iPod|Android/i) && {
+            sampleSize: 16,
+            latency: 0
+          })
+        }
+      }
+      
+      const stream = await navigator.mediaDevices.getUserMedia(audioConstraints)
       
       console.log('Microphone access granted') // Debug log
       streamRef.current = stream
 
       // Try different MIME types for better browser compatibility
-      let mimeType = 'audio/webm;codecs=opus'
-      if (!MediaRecorder.isTypeSupported(mimeType)) {
-        if (MediaRecorder.isTypeSupported('audio/webm')) {
-          mimeType = 'audio/webm'
-        } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
-          mimeType = 'audio/mp4'
-        } else if (MediaRecorder.isTypeSupported('audio/ogg')) {
-          mimeType = 'audio/ogg'
-        } else {
-          mimeType = '' // Let browser choose
+      // Priority order optimized for mobile compatibility
+      const mimeTypes = [
+        'audio/webm;codecs=opus',  // Chrome/Edge desktop
+        'audio/webm',              // Chrome/Edge fallback
+        'audio/mp4;codecs=mp4a.40.2', // Safari/iOS
+        'audio/mp4',               // Safari fallback
+        'audio/ogg;codecs=opus',   // Firefox
+        'audio/wav',               // Universal fallback
+        'audio/mpeg',              // Older browsers
+        ''                         // Let browser choose as last resort
+      ]
+      
+      let mimeType = ''
+      for (const type of mimeTypes) {
+        if (type === '' || MediaRecorder.isTypeSupported(type)) {
+          mimeType = type
+          break
         }
       }
 
@@ -103,9 +162,18 @@ export default function VoiceInput({ onTranscription, placeholder, disabled = fa
       }
 
       console.log('Starting recording...') // Debug log
-      mediaRecorder.start(1000) // Collect data every second
-      setIsRecording(true)
-      toast.success('Recording started - speak now!')
+      
+      // Validate MediaRecorder is ready before starting
+      if (mediaRecorder.state === 'inactive') {
+        // Use different timeslice for mobile to handle potential connectivity issues
+        const timeslice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? 500 : 1000
+        mediaRecorder.start(timeslice)
+        setIsRecording(true)
+        toast.success('Recording started - speak now!')
+      } else {
+        console.error('MediaRecorder not in inactive state:', mediaRecorder.state)
+        toast.error('Unable to start recording. Please try again.')
+      }
     } catch (error) {
       console.error('Error starting recording:', error)
       
@@ -133,7 +201,21 @@ export default function VoiceInput({ onTranscription, placeholder, disabled = fa
     
     try {
       const formData = new FormData()
-      formData.append('audio', audioBlob, 'audio.webm')
+      
+      // Determine file extension based on blob type
+      let fileName = 'audio.webm'
+      if (audioBlob.type.includes('mp4')) {
+        fileName = 'audio.mp4'
+      } else if (audioBlob.type.includes('wav')) {
+        fileName = 'audio.wav'
+      } else if (audioBlob.type.includes('ogg')) {
+        fileName = 'audio.ogg'
+      } else if (audioBlob.type.includes('mpeg')) {
+        fileName = 'audio.mp3'
+      }
+      
+      console.log('Sending audio file:', fileName, 'Size:', audioBlob.size, 'Type:', audioBlob.type)
+      formData.append('audio', audioBlob, fileName)
 
       const response = await fetch('/api/transcribe', {
         method: 'POST',
